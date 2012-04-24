@@ -7,6 +7,10 @@ PROTOCOL_VERSION = 5
 PROTOCOL_HEADER = "bib"
 PROTOCOL_HEADER_SIZE = 6
 
+PROTOCOL_PACKET_TYPE_REQUEST = 0
+PROTOCOL_PACKET_TYPE_RESPONSE = 1
+PROTOCOL_PACKET_TYPE_ERROR = 2
+
 class SlackerRequest(object):
     type = 0
     def __init__(self, ct, fname, args):
