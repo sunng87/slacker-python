@@ -66,8 +66,11 @@ class Client(object):
         cb = conn.send(req)
         result = cb.get()
         if isinstance(result, SlackerResponse):
-            result.desrialize()
-            return result.body
+            if result.code == PROTOCOL_RESULT_CODE_SUCCESS:
+                result.desrialize()
+                return result.body
+            else:
+                raise RuntimeError("Error code: "+ str(result.code))
         else:
             code = result.code
             raise RuntimeError("Error code: " + str(code))

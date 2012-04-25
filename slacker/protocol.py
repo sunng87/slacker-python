@@ -11,6 +11,8 @@ PROTOCOL_PACKET_TYPE_ERROR = 4
 PROTOCOL_CONTENT_TYPE_JSON = 1
 PROTOCOL_CONTENT_TYPE_CLJ = 2
 
+PROTOCOL_RESULT_CODE_SUCCESS = 0
+
 class SlackerRequest(object):
     def __init__(self, ct, fname, args):
         self.ct = ct
@@ -32,12 +34,14 @@ class SlackerResponse(object):
         self.body = body
 
     def serialize(self):
-        serializer = json if self.ct == PROTOCOL_CONTENT_TYPE_JSON else clj
-        self.body = serializer.dumps(self.body)
+        if self.body is not None:
+            serializer = json if self.ct == PROTOCOL_CONTENT_TYPE_JSON else clj
+            self.body = serializer.dumps(self.body)
 
     def desrialize(self):
-        serializer = json if self.ct == PROTOCOL_CONTENT_TYPE_JSON else clj
-        self.body = serializer.loads(self.body)
+        if self.body is not None:
+            serializer = json if self.ct == PROTOCOL_CONTENT_TYPE_JSON else clj
+            self.body = serializer.loads(self.body)
 
 class SlackerError(object):
     def __init__(self, ct, code):
@@ -76,7 +80,10 @@ def readResponse(fd):
 
     ## read body
     l = struct.unpack(">I", fd.recv(4))[0]
-    body = struct.unpack(str(l)+"s", fd.recv(l))[0]
+    if l > 0:
+        body = struct.unpack(str(l)+"s", fd.recv(l))[0]
+    else:
+        body = None
 
     return SlackerResponse(ct, rc, body)
 

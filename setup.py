@@ -7,7 +7,7 @@ except ImportError:
 long_desc=open('README.rst','r').read()
 
 setup(name="slacker-python",
-      version="0.1.0",
+      version="0.1.1",
       author="Sun Ning",
       author_email="sunng@about.me",
       description="python client of slacker RPC",
