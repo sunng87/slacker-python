@@ -82,8 +82,9 @@ class Connection(object):
         self.connect_lock.clear()
 
 class Client(object):
-    def __init__(self, addrs):
+    def __init__(self, addrs, timeout=10):
         self.connections = map(lambda m: Connection(m), addrs)
+        self.timeout = timeout
         for c in self.connections:
             c.connect()
 
@@ -93,7 +94,7 @@ class Client(object):
         conn = random.choice(self.connections)
         cb = conn.send(req)
         try:
-            result = cb.get(timeout=10)
+            result = cb.get(timeout=self.timeout)
         except gevent.Timeout, t:
             raise RuntimeError("Timeout")
         if isinstance(result, SlackerResponse):
