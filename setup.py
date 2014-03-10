@@ -7,7 +7,7 @@ except ImportError:
 long_desc=open('README.rst','r').read()
 
 setup(name="slacker-python",
-      version="0.1.3",
+      version="0.1.4",
       author="Sun Ning",
       author_email="sunng@about.me",
       description="python client of slacker RPC",
@@ -15,6 +15,7 @@ setup(name="slacker-python",
       url="http://github.com/sunng87/slacker-python",
       license='mit',
       packages=['slacker'],
+      package_data={'': ['README.rst']},
       install_requires=['gevent==1.0', 'pyclj==0.2.1'],
       classifiers=['Development Status :: 3 - Alpha',
             'Intended Audience :: Developers',
