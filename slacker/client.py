@@ -94,7 +94,7 @@ class Client(object):
         cb = conn.send(req)
         try:
             result = cb.get(timeout=10)
-        except Timeout, t:
+        except gevent.Timeout, t:
             raise RuntimeError("Timeout")
         if isinstance(result, SlackerResponse):
             if result.code == PROTOCOL_RESULT_CODE_SUCCESS:
