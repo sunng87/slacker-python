@@ -39,10 +39,10 @@ class Connection(object):
                 resp = None
                 if packetType == PROTOCOL_PACKET_TYPE_RESPONSE:
                     resp = readResponse(self.sock)
-                    
+
                 elif packetType == PROTOCOL_PACKET_TYPE_ERROR:
                     resp = readError(self.sock)
-                    
+
                 cb = self.reqs[tid]
                 cb.set(resp)
                 del self.reqs[tid]
@@ -63,7 +63,7 @@ class Connection(object):
         writeRequest(buf, request)
         data = buf.getvalue()
         buf.close()
-        
+
         try:
             self.connect_lock.wait()
             self.sock.send(data)
@@ -106,15 +106,3 @@ class Client(object):
         else:
             code = result.code
             raise RuntimeError("Error code: " + str(code))
-
-class Proxy(object):
-    def __init__(self, client, namespace):
-        self.client = client
-        self.namespace = namespace
-
-    def __getattr__(self, name):
-        return (lambda *x: self._invoke(name, x))
-
-    def _invoke(self, name, args):
-        return self.client.call(self.namespace+"/"+name, args)
-
