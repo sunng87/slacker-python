@@ -106,3 +106,7 @@ class Client(object):
         else:
             code = result.code
             raise RuntimeError("Error code: " + str(code))
+
+    def close(self):
+        for c in self.connections:
+            c.close()
