@@ -1,6 +1,8 @@
 slacker-python
 ==============
 
+.. image:: https://img.shields.io/pypi/v/slacker-python.svg
+
 Python client of the `slacker RPC <https://github.com/sunng87/slacker>`_.
 
 This project is still working in progress.
@@ -14,6 +16,7 @@ Usage
 -----
 
 ::
+
    from slacker.geventbackend import Client
    from slacker.proxy import Proxy
 
@@ -25,6 +28,7 @@ Usage
 
    ## remote function rand-ints
    p.call("rand-ints", 40)
+
 
 License
 -------
