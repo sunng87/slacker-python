@@ -3,8 +3,8 @@ import itertools
 import struct
 
 import gevent
-import gevent.socket
-import gevent.event
+from gevent import socket
+from gevent import event
 
 from protocol import *
 import cStringIO as StringIO
@@ -13,14 +13,14 @@ class Connection(object):
     def __init__(self, addr):
         self.addr = (addr.split(":")[0], int(addr.split(":")[1]))
         self.sock = None
-        self.connect_lock = gevent.event.Event()
+        self.connect_lock = event.Event()
         self.transid = itertools.count()
         self.reqs = {}
 
     def connect(self):
         while True:
             try:
-                self.sock = gevent.socket.create_connection(self.addr)
+                self.sock = socket.create_connection(self.addr)
                 self.connect_lock.set()
                 self.eloop = gevent.spawn(self.readLoop)
                 break
@@ -30,7 +30,6 @@ class Connection(object):
     def reconnect(self):
         self.close()
         self.connect()
-
 
     def readLoop(self):
         while True:
@@ -55,7 +54,7 @@ class Connection(object):
 
     def send(self, request):
         transid = self.transid.next()
-        cb = gevent.event.AsyncResult()
+        cb = event.AsyncResult()
         self.reqs[transid] = cb
 
         buf = StringIO.StringIO()
@@ -82,17 +81,20 @@ class Connection(object):
         self.connect_lock.clear()
 
 class Client(object):
-    def __init__(self, addrs, timeout=10):
-        self.connections = map(lambda m: Connection(m), addrs)
+    def __init__(self, addr, timeout=10):
         self.timeout = timeout
-        for c in self.connections:
-            c.connect()
+        conn = Connection(addr)
+        conn.connect()
+        self.conn = conn
+        self.started = True
 
     def call(self, fname, args):
+        if not self.started:
+            raise RuntimeError("Client closed.")
+
         req = SlackerRequest(PROTOCOL_CONTENT_TYPE_CLJ, fname, args)
         req.serialize()
-        conn = random.choice(self.connections)
-        cb = conn.send(req)
+        cb = self.conn.send(req)
         try:
             result = cb.get(timeout=self.timeout)
         except gevent.Timeout, t:
@@ -108,5 +110,5 @@ class Client(object):
             raise RuntimeError("Error code: " + str(code))
 
     def close(self):
-        for c in self.connections:
-            c.close()
+        self.conn.close()
+        self.started = False

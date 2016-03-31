@@ -8,3 +8,6 @@ class Proxy(object):
 
     def _invoke(self, name, args):
         return self.client.call(self.namespace+"/"+name, args)
+
+    def call(self, name, *args):
+        return self._invoke(name, args)
