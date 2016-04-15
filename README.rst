@@ -1,7 +1,13 @@
 slacker-python
 ==============
 
-.. image:: https://img.shields.io/pypi/v/slacker-python.svg
+.. image:: https://img.shields.io/pypi/v/slacker-python.svg?maxAge=2592000
+   :target: https://pypi.python.org/pypi/slacker-python/
+.. image:: https://img.shields.io/pypi/l/slacker-python.svg?maxAge=2592000
+   :target: https://pypi.python.org/pypi/slacker-python/
+.. image:: https://img.shields.io/pypi/pyversions/slacker-python.svg?maxAge=2592000
+   :target: https://pypi.python.org/pypi/slacker-python/
+
 
 Python client of the `slacker RPC <https://github.com/sunng87/slacker>`_.
 
@@ -10,7 +16,7 @@ This project is still working in progress.
 Installation
 ------------
 
-`pip install slacker`
+`pip install slacker-python`
 
 Usage
 -----

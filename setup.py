@@ -7,7 +7,7 @@ except ImportError:
 long_desc=open('README.rst','r').read()
 
 setup(name="slacker-python",
-      version="0.4.0-alpha1",
+      version="0.4.0-alpha2",
       author="Sun Ning",
       author_email="sunng@about.me",
       description="python client of slacker RPC",
@@ -20,9 +20,10 @@ setup(name="slacker-python",
                         'gevent==1.1.0',
                         'kazoo==2.2.1'],
       classifiers=['Development Status :: 3 - Alpha',
-            'Intended Audience :: Developers',
-            'License :: OSI Approved :: MIT License',
-            'Topic :: Software Development',
-            'Programming Language :: Python',
-            'Operating System :: OS Independent']
+                   'Intended Audience :: Developers',
+                   'License :: OSI Approved :: MIT License',
+                   'Topic :: Software Development',
+                   "Programming Language :: Python :: 2",
+                   'Programming Language :: Python :: 2.7',
+                   'Operating System :: OS Independent']
     )
