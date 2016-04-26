@@ -13,26 +13,29 @@ class Connection(object):
     def __init__(self, addr):
         self.addr = (addr.split(":")[0], int(addr.split(":")[1]))
         self.sock = None
+        self.eloop = None
+        self.started = False
         self.connect_lock = event.Event()
         self.transid = itertools.count()
         self.reqs = {}
 
     def connect(self):
+        self.started = True
+        self.sock = socket.create_connection(self.addr)
+        self.connect_lock.set()
+        self.eloop = gevent.spawn(self.readLoop)
+
+    def _reconnect(self):
+        self.close()
         while True:
             try:
-                self.sock = socket.create_connection(self.addr)
-                self.connect_lock.set()
-                self.eloop = gevent.spawn(self.readLoop)
+                self.connect()
                 break
             except:
                 gevent.sleep(5)
 
-    def reconnect(self):
-        self.close()
-        self.connect()
-
     def readLoop(self):
-        while True:
+        while self.started:
             try:
                 _, tid, packetType = readHeader(self.sock)
                 resp = None
@@ -46,13 +49,13 @@ class Connection(object):
                 cb.set(resp)
                 del self.reqs[tid]
             except struct.error:
-                self.reconnect()
+                self._reconnect()
                 break
             except IOError:
-                self.reconnect()
+                self._reconnect()
                 break
 
-    def send(self, request):
+    def send(self, request, timeout):
         transid = self.transid.next()
         cb = event.AsyncResult()
         self.reqs[transid] = cb
@@ -64,15 +67,25 @@ class Connection(object):
         buf.close()
 
         try:
-            self.connect_lock.wait()
+            if self.sock is None:
+                self.connect()
+
+            self.connect_lock.wait(timeout=timeout)
             self.sock.send(data)
+        except gevent.Timeout:
+            raise RuntimeError("Timeout")
+            ## reconnect
+            gevent.spawn(self._reconnect)
+            print 1
         except:
             ## reconnect
-            self.reconnect()
+            gevent.spawn(self._reconnect)
+            print 2
 
         return cb
 
     def close(self):
+        self.started = False
         if self.eloop:
             gevent.kill(self.eloop)
         if self.sock:
@@ -84,7 +97,7 @@ class Client(object):
     def __init__(self, addr, timeout=10):
         self.timeout = timeout
         conn = Connection(addr)
-        conn.connect()
+        #conn.connect()
         self.conn = conn
         self.started = True
 
@@ -94,10 +107,10 @@ class Client(object):
 
         req = SlackerRequest(PROTOCOL_CONTENT_TYPE_CLJ, fname, args)
         req.serialize()
-        cb = self.conn.send(req)
+        cb = self.conn.send(req, self.timeout)
         try:
             result = cb.get(timeout=self.timeout)
-        except gevent.Timeout, t:
+        except gevent.Timeout:
             raise RuntimeError("Timeout")
         if isinstance(result, SlackerResponse):
             if result.code == PROTOCOL_RESULT_CODE_SUCCESS:
