@@ -76,11 +76,9 @@ class Connection(object):
             raise RuntimeError("Timeout")
             ## reconnect
             gevent.spawn(self._reconnect)
-            print 1
         except:
             ## reconnect
             gevent.spawn(self._reconnect)
-            print 2
 
         return cb
 
@@ -94,18 +92,19 @@ class Connection(object):
         self.connect_lock.clear()
 
 class Client(object):
-    def __init__(self, addr, timeout=10):
+    def __init__(self, addr, timeout=10, content_type=PROTOCOL_CONTENT_TYPE_CLJ):
         self.timeout = timeout
         conn = Connection(addr)
         #conn.connect()
         self.conn = conn
         self.started = True
+        self.content_type = content_type
 
     def call(self, fname, args):
         if not self.started:
             raise RuntimeError("Client closed.")
 
-        req = SlackerRequest(PROTOCOL_CONTENT_TYPE_CLJ, fname, args)
+        req = SlackerRequest(self.content_type, fname, args)
         req.serialize()
         cb = self.conn.send(req, self.timeout)
         try:
